@@ -180,7 +180,6 @@ bool BSTree<T>::removeHelper(BSTree<T>::Node * node, int num ){
 	node = findNode(node,num);
   if ( node ==NULL )
       return false;
-  if (node)
   else {
 		if ( node->left == nullptr && node->right == nullptr ){
 
