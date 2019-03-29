@@ -4,17 +4,18 @@
 #include <vector>
 
 using namespace std;
+
 template <class T>
 class BSTree{
 private:
   class Node{
     public:
+      T value;
       Node *left;
       Node *right;
       Node *parent;
-      T val;
-      Node(T val){
-        this->val=val;
+      Node(T value){
+        this->value=value;
         this->right=nullptr;
         this->left=nullptr;
         this->parent=nullptr;
@@ -25,47 +26,36 @@ public:
 
   BSTree();
   bool empty();
-  ~BSTree();
   bool insert(T val);
   bool find(T val);
-  bool remove(int num);
+  bool remove(T val);
   void sortedArray(vector<int> &list);
-  bool removeHelper(BSTree<T>::Node * node, int num);
-  bool insertHelper(BSTree<T>::Node * node, T val);
-  bool findHelper(BSTree<T>::Node * node, T val);
-  void sortedArrayHelper(BSTree<T>::Node * node,vector<int> &list);
+  bool findhelper(BSTree<T>::Node * node, T val);
+  bool inserthelper(BSTree<T>::Node * node, T val);
+  bool removehelper(BSTree<T>::Node * node, T val);
+  void sortedarrayhelper(BSTree<T>::Node * node,vector<int> &list);
+  void removeleaf(BSTree<T>::Node * remnode);
+  void shortcircuit(BSTree<T>::Node * remnode);
+  void promotion(BSTree<T>::Node * remnode);
+  Node* findmin(BSTree<T>::Node * minnode);
+  Node* findnode(BSTree<T>::Node * fnode,T val);
   int height();
   int findHeight(Node* node);
   void balance();
   void balanceHelper(BSTree<T>::Node * node,vector<int> &list);
-  void promotion(BSTree<T>::Node * node);
-  Node* searchMin(BSTree<T>::Node * node);
-  void shortCircuit(BSTree<T>::Node * node);
-  void deleteLeaf(BSTree<T>::Node * node);
-  Node* findNode(BSTree<T>::Node * node,int num);
+  ~BSTree();
   void deleteHelper(BSTree<T>::Node * node);
 };
-template<class T>
+
+template<typename T>
 BSTree <T>:: BSTree(){
   this->root=NULL;
 }
-template<class T>
-BSTree <T>:: ~BSTree(){
+template<typename T>
+BSTree<T>::~BSTree(){
   //deleteHelper(root);
 }
-template<class T>
-void BSTree <T>:: deleteHelper(BSTree<T>::Node * node){
-
-    if (node == NULL) return;
-
-    deleteHelper(node->left);
-    deleteHelper(node->right);
-
-
-    delete node;
-}
-
-template <class T>
+template <typename T>
 bool BSTree <T>:: empty(){
   if(this->root==NULL){
     return true;
@@ -74,222 +64,199 @@ bool BSTree <T>:: empty(){
     return false;
   }
 }
-template<class T>
-typename BSTree<T>::Node*  BSTree<T>::findNode(BSTree<T>::Node * node,int num){
-
-  if (num < node->val) {
-      if (node->left != NULL) {
-          return findNode(node->left,num);
-      }
-  } else if (num > node->val) {
-      if (node->right != NULL) {
-          return findNode(node->right,num);
-      }
-  } else if (num == node->val){
-      return node;
-  }else {
-    node =nullptr;
-  }
-
-}
-template<class T>
-typename BSTree<T>::Node* BSTree<T>::searchMin(BSTree<T>::Node * node){
-  while (node->left != NULL)
-{
-    node = node->left;
-}
-return node;
-}
 template <typename T>
-void BSTree<T>::deleteLeaf(BSTree<T>::Node * node){
-  if(node->parent == NULL){
-    root = nullptr;
-  }
-  else{
-	  if (node->parent->right == node){
-		  node->parent->right = NULL;
-	  }else{
-	  	node->parent->left = NULL;
-	    }
-	delete node;
-  node = NULL;
-  }
-}
-
-template <typename T>
-void BSTree<T>::shortCircuit(BSTree<T>::Node * node){
-  if(node->parent == NULL){
-    if(node->right !=NULL && node->left == NULL){
-      root = node->right;
-      delete node;
-      root->parent=nullptr;
-    }
-    if(node->right ==NULL && node->left != NULL){
-      root = node->left;
-      delete node;
-      root->parent=nullptr;
-    }
-  }
-  else{
-    if(node->parent->right == node){
-      if(node->right == NULL && node->left != NULL){
-        node->parent->right = node->left;
-        node->parent = node->left->parent;
-      }
-      else
-      {
-        node->parent->right =node->left;
-      }
-      node->parent->right = node->right;
-      node->right->parent = node->parent;
-      delete node;
-      node = NULL;
-    }
-    else{
-      if(node->left == NULL){
-        node->parent->left = node->right;
-        node->right->parent = node->parent;
-      }
-      else{
-        node->parent->left = node->left;
-        node->left->parent = node->parent;
-      }
-      delete node;
-      node = NULL;
-    }
-  }
-}
-
-template <class T>
-void BSTree<T>::promotion(BSTree<T>::Node * node){
-  Node * d_node = searchMin(node->right);
-	node->val = d_node->val;
-	//Leaf
-	if(d_node->left==NULL && d_node->right==NULL){
-		deleteLeaf(d_node);
-	//one branch
-	}else{
-		shortCircuit(d_node);
-
-	}
-}
-
-
-template <class T>
-bool BSTree<T>::removeHelper(BSTree<T>::Node * node, int num ){
-	node = findNode(node,num);
-  if ( node ==NULL )
-      return false;
-  else {
-		if ( node->left == nullptr && node->right == nullptr ){
-
-    deleteLeaf(node);
-  	}
-     if((node->left==nullptr && node->right != nullptr) || (node->left != nullptr && node->right==nullptr) ) {
-      shortCircuit(node);
-    }
-    if(node->left != nullptr && node->right != nullptr){
-      promotion(node);
-    }
-  return true;
-	}
-}
-template <typename T>
-bool BSTree<T>::remove(int num){
-  if (root == NULL) {
-    return false;
-  }
-  return removeHelper(root, num );
-}
-
-
-// ----------------------------------- FIND AND FINDHELPER ------------------------------------------------//
-
-template <typename T>
-bool BSTree<T>:: find(T val){
-  if (root == NULL) {
-    return false;
-  }
-  return findHelper(root , val);
-}
-template <class T>
-bool BSTree<T>::findHelper(BSTree<T>::Node * node, T val) {
-  if (val< node->val){
-      if(node->left==NULL){
-          return false;
-      }
-      return findHelper(node->left,val);
-  }
-  else if(val> node->val){
-      if (node->right==NULL){
-          return false;
-      }
-      return findHelper(node->right,val);
-  }
-  return true;
-
-  }
-// ----------------------------------- FIND AND FINDHELPER ------------------------------------------------//
-
-// ----------------------------------- SORTED AND SORTEDHELPER ------------------------------------------------//
-
-template <typename T>
-void BSTree<T>::sortedArray(vector<int> &list){
-  if (root == NULL) {
-    return ;
-
-  }
-  return sortedArrayHelper(root, list );
-}
-template <class T>
-void BSTree<T>::sortedArrayHelper(BSTree<T>::Node * node,vector<int> &list){
-      if (node == NULL)
-        return;
-      sortedArrayHelper(node->left, list );
-      list.push_back (node->val);
-      sortedArrayHelper(node->right, list );
-
-}
-// ----------------------------------- SORTED AND SORTEDHELPER ------------------------------------------------//
-
-// ----------------------------------- INSERT AND INSERTHELPER ------------------------------------------------//
-
-template <class T>
 bool BSTree <T>::insert(T val){
-  // If the root is null, make new node with val
-  // Otherwise, invoke helper
-
-  if (root == NULL) {
+  if(root == NULL) {
     root = new Node(val);
     root->parent == nullptr;
     return true;
   }
-  return insertHelper(root , val);
+  return inserthelper(root , val);
 }
-template <class T>
-bool BSTree<T>::insertHelper(BSTree<T>::Node * node, T val) {
-  if (val < node->val) {
-      if (node->left != NULL) {
-          return insertHelper(node->left,val);
-      } else {
-          node->left = new Node(val);
-          node->left->parent = node;
+template <typename T>
+bool BSTree<T>::inserthelper(BSTree<T>::Node * node, T val) {
+  if(val > node->value) {
+    if(node->right != NULL) {
+      return inserthelper(node->right,val);
+    }
+    else{
+      node->right = new Node(val);
+      node->right->parent = node;
+    }
+  } 
+  else if(val < node->value) {
+    if(node->left != NULL) {
+        return inserthelper(node->left,val);
+      } 
+      else{
+        node->left = new Node(val);
+        node->left->parent = node;
       }
-  } else if (val > node->val) {
-      if (node->right != NULL) {
-          return insertHelper(node->right,val);
-      } else {
-          node->right = new Node(val);
-          node->right->parent = node;
-      }
-
-  } else {
-      return false;
+  } 
+  else{
+    return false;
   }
 }
-// ----------------------------------- INSERT AND INSERTHELPER ------------------------------------------------//
-
-
+template <typename T>
+bool BSTree<T>:: find(T val){
+  if(root == NULL) {
+    return false;
+  }
+  return findhelper(root , val);
+}
+template <typename T>
+bool BSTree<T>::findhelper(BSTree<T>::Node * node, T val) {
+  if(val< node->value){
+      if(node->left==NULL){
+          return false;
+      }
+      return findhelper(node->left,val);
+  }
+  else if(val> node->value){
+      if (node->right==NULL){
+          return false;
+      }
+      return findhelper(node->right,val);
+  }
+  return true;
+}
+template <typename T>
+bool BSTree<T>::remove(T val){
+  if(root == NULL) {
+    return false;
+  }
+  return removehelper(root,val);
+}
+template <typename T>
+bool BSTree<T>::removehelper(BSTree<T>::Node * remnode, T val ){
+  remnode = findnode(remnode,val);
+  if(remnode ==NULL )
+      return false;
+  else{
+    if(remnode->left == nullptr && remnode->right == nullptr ){
+      removeleaf(remnode);
+    }
+    if((remnode->left==nullptr && remnode->right != nullptr) || (remnode->left != nullptr && remnode->right==nullptr) ) {
+      shortcircuit(remnode);
+    }
+    if(remnode->left != nullptr && remnode->right != nullptr){
+      promotion(remnode);
+    }
+  return true;
+  }
+}
+template <typename T>
+void BSTree<T>::removeleaf(BSTree<T>::Node * remnode){
+  if(remnode->parent == NULL){
+    root = nullptr;
+  }
+  else{
+    if(remnode->parent->right == remnode){
+    remnode->parent->right = NULL;
+    }
+    else{
+      remnode->parent->left = NULL;
+    }
+    delete remnode;
+    remnode = NULL;
+  }
+}
+template <typename T>
+void BSTree<T>::shortcircuit(BSTree<T>::Node * remnode){
+  if(remnode->parent == NULL){
+    if(remnode->right !=NULL && remnode->left == NULL){
+      root = remnode->right;
+      delete remnode;
+      root->parent=nullptr;
+    }
+    if(remnode->right ==NULL && remnode->left != NULL){
+      root = remnode->left;
+      delete remnode;
+      root->parent=nullptr;
+    }
+  }
+  else{
+    if(remnode->parent->right == remnode){
+      if(remnode->right == NULL && remnode->left != NULL){
+        remnode->parent->right = remnode->left;
+        remnode->parent = remnode->left->parent;
+      }
+      else
+      {
+        remnode->parent->right =remnode->left;
+      }
+      remnode->parent->right = remnode->right;
+      remnode->right->parent = remnode->parent;
+      delete remnode;
+      remnode = NULL;
+    }
+    else{
+      if(remnode->left == NULL){
+        remnode->parent->left = remnode->right;
+        remnode->right->parent = remnode->parent;
+      }
+      else{
+        remnode->parent->left = remnode->left;
+        remnode->left->parent = remnode->parent;
+      }  
+      delete remnode;
+      remnode = NULL;
+    }
+  }
+}
+template <typename T>
+void BSTree<T>::promotion(BSTree<T>::Node * remnode){
+  Node * pronode = findmin(remnode->right);
+  remnode->value = pronode->value;
+  if(pronode->left==NULL && pronode->right==NULL){
+    removeleaf(pronode);
+  }
+  else{
+    shortcircuit(pronode);    
+  }
+}
+template <typename T>
+void BSTree<T>::sortedArray(vector<int> &list){
+  if(root == NULL) {
+    return ;
+  }
+  return sortedarrayhelper(root, list);
+}
+template <typename T>
+void BSTree<T>::sortedarrayhelper(BSTree<T>::Node * node,vector<int> &list){
+      if(node == NULL){
+        return;
+      }  
+      sortedarrayhelper(node->left, list );
+      list.push_back (node->value);
+      sortedarrayhelper(node->right, list );
+}
+template<typename T>
+typename BSTree<T>::Node*  BSTree<T>::findnode(BSTree<T>::Node * fnode,T val){
+  if(val > fnode->value) {
+    if(fnode->right != NULL){
+      return findnode(fnode->right,val);
+    }
+  } 
+  else if(val < fnode->value){
+    if(fnode->left != NULL) {
+      return findnode(fnode->left,val);
+    }
+  } 
+  else if(val == fnode->value){
+    return fnode;
+  }
+  else{
+    fnode =nullptr;
+  }
+}
+template<typename T>
+typename BSTree<T>::Node* BSTree<T>::findmin(BSTree<T>::Node * minnode){
+  while(minnode->left != NULL){
+    minnode = minnode->left;
+  }
+  return minnode;
+}
 
 
 #endif
